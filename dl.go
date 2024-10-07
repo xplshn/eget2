@@ -12,7 +12,7 @@ import (
 	"time"
 
 	pb "github.com/schollz/progressbar/v3"
-	"github.com/zyedidia/eget/home"
+	"github.com/xplshn/eget2/home"
 )
 
 func tokenFrom(s string) (string, error) {

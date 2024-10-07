@@ -9,7 +9,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/jessevdk/go-flags"
-	"github.com/zyedidia/eget/home"
+	"github.com/xplshn/eget2/home"
 )
 
 type ConfigGlobal struct {
