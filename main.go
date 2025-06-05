@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,19 +11,19 @@ import (
 	"time"
 
 	"eget2/pkg"
+	_ "github.com/breml/rootcerts" // built-in ca certs
 
 	"github.com/hedzr/progressbar"
 	"github.com/hedzr/progressbar/cursor"
 	"github.com/urfave/cli/v3"
 	"golang.org/x/term"
-	"net/url"
 )
 
 func main() {
 	app := &cli.Command{
 		Name:    "eget2",
 		Usage:   "Download files from GitHub, GitLab, GHCR, or direct URLs",
-		Version: "1.0.0",
+		Version: "1.0.1",
 		Flags: []cli.Flag{
 			&cli.StringSliceFlag{
 				Name:    "github",
@@ -33,6 +34,11 @@ func main() {
 				Name:    "gitlab",
 				Aliases: []string{"gl"},
 				Usage:   "GitLab project in owner/repo format or project ID",
+			},
+			&cli.StringSliceFlag{
+				Name:    "codeberg",
+				Aliases: []string{"cb"},
+				Usage:   "Codeberg project in owner/repo format",
 			},
 			&cli.StringSliceFlag{
 				Name:  "ghcr",
@@ -200,6 +206,35 @@ func run(_ context.Context, c *cli.Command) error {
 				if err := downloadGitLab(ctx, glClient, project, filterOpts, downloadOpts, tasks, termWidth, c.Bool("yes")); err != nil {
 					errorsMu.Lock()
 					errors = append(errors, fmt.Sprintf("GitLab %s: %v", project, err))
+					errorsMu.Unlock()
+				}
+			}(project)
+		}
+	}
+
+	if codebergProjects := c.StringSlice("codeberg"); len(codebergProjects) > 0 {
+		cbClient, err := eget2.NewCodebergClient(eget2.CodebergConfig{
+			APIKey:    os.Getenv("CODEBERG_TOKEN"),
+			RateLimit: 10,
+		})
+		if err != nil {
+			return fmt.Errorf("create Codeberg client: %w", err)
+		}
+		defer cbClient.Close()
+
+		for _, project := range codebergProjects {
+			tag := ""
+			if parts := strings.Split(project, "@"); len(parts) == 2 {
+				project, tag = parts[0], parts[1]
+			}
+			filterOpts.Tag = tag
+
+			wg.Add(1)
+			go func(project string) {
+				defer wg.Done()
+				if err := downloadCodeberg(ctx, cbClient, project, filterOpts, downloadOpts, tasks, termWidth, c.Bool("yes")); err != nil {
+					errorsMu.Lock()
+					errors = append(errors, fmt.Sprintf("Codeberg %s: %v", project, err))
 					errorsMu.Unlock()
 				}
 			}(project)
@@ -456,6 +491,81 @@ func downloadGitLab(ctx context.Context, client *eget2.GitLabClient, project str
 
 	progressChan := make(chan eget2.DownloadProgress)
 	downloadOpts.URL = asset.DirectAssetURL
+	downloadOpts.ProgressChan = progressChan
+
+	barTitle := fmt.Sprintf("Downloading %s", asset.Name)
+	pbarOpts := []progressbar.Opt{
+		progressbar.WithBarResumeable(true),
+	}
+	if termWidth < 120 {
+		barTitle = asset.Name
+		pbarOpts = append(
+			pbarOpts,
+			progressbar.WithBarTextSchema(`{{.Bar}} {{.Percent}} | <font color="green">{{.Title}}</font>`),
+			progressbar.WithBarWidth(termWidth-30),
+		)
+	}
+
+	var bar progressbar.PB
+	var lastDownloaded int64
+	tasks.Add(
+		progressbar.WithTaskAddBarTitle(barTitle),
+		progressbar.WithTaskAddBarOptions(pbarOpts...),
+		progressbar.WithTaskAddOnTaskProgressing(func(pbar progressbar.PB, _ <-chan struct{}) (stop bool) {
+			bar = pbar
+			for p := range progressChan {
+				switch p.State {
+				case eget2.DownloadPreparing:
+					bar.UpdateRange(0, p.Total)
+					lastDownloaded = 0
+				case eget2.DownloadInProgress:
+					bar.Step(p.Downloaded - lastDownloaded)
+					lastDownloaded = p.Downloaded
+				case eget2.DownloadComplete:
+					return true
+				case eget2.DownloadError, eget2.DownloadAborted:
+					return true
+				}
+			}
+			return true
+		}),
+	)
+
+	downloader := eget2.NewDownloader(client.GetHTTPClient())
+	_, err = downloader.Download(ctx, downloadOpts)
+	return err
+}
+
+func downloadCodeberg(ctx context.Context, client *eget2.CodebergClient, project string, filterOpts eget2.FilterOptions, downloadOpts eget2.DownloadOptions, tasks *progressbar.Tasks, termWidth int, autoSelect bool) error {
+	releases, err := client.FetchReleases(ctx, project, filterOpts.Tag)
+	if err != nil {
+		return fmt.Errorf("fetch releases: %w", err)
+	}
+
+	assets, err := client.FilterAssets(releases, filterOpts)
+	if err != nil {
+		return fmt.Errorf("filter assets: %w", err)
+	}
+
+	var asset eget2.CodebergAsset
+	if len(assets) == 1 || autoSelect {
+		asset = assets[0]
+	} else {
+		fmt.Fprintf(os.Stdout, "\nAvailable assets:\n")
+		for i, a := range assets {
+			fmt.Fprintf(os.Stdout, "%d. %s (%s)\n", i+1, a.Name, humanBytes(a.Size))
+		}
+		fmt.Fprintf(os.Stdout, "\nSelect an asset (1-%d): ", len(assets))
+		var choice int
+		fmt.Scan(&choice)
+		if choice < 1 || choice > len(assets) {
+			return fmt.Errorf("invalid asset selection")
+		}
+		asset = assets[choice-1]
+	}
+
+	progressChan := make(chan eget2.DownloadProgress)
+	downloadOpts.URL = asset.BrowserDownloadURL
 	downloadOpts.ProgressChan = progressChan
 
 	barTitle := fmt.Sprintf("Downloading %s", asset.Name)
