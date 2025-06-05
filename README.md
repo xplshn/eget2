@@ -98,7 +98,6 @@ Below are practical examples to demonstrate how to use eget2:
     ```
     This saves the downloaded files to a specified directory.
 
-```
 
 License
 -------
