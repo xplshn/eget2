@@ -23,32 +23,33 @@ eget2 [global options]
 
 ```
 NAME:
-   eget2 - Download files from GitHub, GitLab, GHCR, or direct URLs
+   eget2 - Download files from GitHub, GitLab, Codeberg, GHCR, or direct URLs
 
 USAGE:
    eget2 [global options]
 
 VERSION:
-   1.0.0
+   1.0.1
 
 GLOBAL OPTIONS:
-   --github string, --gh string [ --github string, --gh string ]  GitHub project in owner/repo format
-   --gitlab string, --gl string [ --gitlab string, --gl string ]  GitLab project in owner/repo format or project ID
-   --ghcr string [ --ghcr string ]                                GHCR image or blob reference
-   --regex string, -r string [ --regex string, -r string ]        Regex patterns to select assets
-   --match string, -m string [ --match string, -m string ]        Keywords to match in asset names
-   --exclude string, -e string [ --exclude string, -e string ]    Keywords to exclude from asset names
-   --yes, -y                                                      Skip prompts and select first asset (default: false)
-   --output string, -o string                                     Output file or directory path
-   --concurrency int, -c int                                      Concurrency limit for downloads (default: 30)
-   --ghcr-api string                                              GHCR API base URL
-   --exact-case                                                   Use exact case matching for keywords (default: false)
-   --extract                                                      Extract archives after download (default: false)
-   --extract-dir string                                           Directory to extract archives
-   --force                                                        Force overwrite existing files (default: false)
-   --skip-existing                                                Skip downloading if file exists (default: false)
-   --help, -h                                                     show help
-   --version, -v                                                  print the version
+   --github string, --gh string   [ --github string, --gh string ]   GitHub project in owner/repo format
+   --gitlab string, --gl string   [ --gitlab string, --gl string ]   GitLab project in owner/repo format or project ID
+   --codeberg string, --cb string [ --codeberg string, --cb string ] Codeberg project in owner/repo format
+   --ghcr string                  [ --ghcr string ]                  GHCR image or blob reference
+   --regex string, -r string      [ --regex string, -r string ]      Regex patterns to select assets
+   --match string, -m string      [ --match string, -m string ]      Keywords to match in asset names
+   --exclude string, -e string    [ --exclude string, -e string ]    Keywords to exclude from asset names
+   --yes, -y                                                         Skip prompts and select first asset (default: false)
+   --output string, -o string                                        Output file or directory path
+   --concurrency int, -c int                                         Concurrency limit for downloads (default: 30)
+   --ghcr-api string                                                 GHCR API base URL
+   --exact-case                                                      Use exact case matching for keywords (default: false)
+   --extract                                                         Extract archives after download (default: false)
+   --extract-dir string                                              Directory to extract archives
+   --force                                                           Force overwrite existing files (default: false)
+   --skip-existing                                                   Skip downloading if file exists (default: false)
+   --help, -h                                                        show help
+   --version, -v                                                     print the version
 ```
 
 ### Examples
