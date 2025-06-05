@@ -1,2 +1,3 @@
 1. Abstract away enough, until we get the ./pkg/*.go codebase to 800LOC or less
 2. Follow DRY principle
+3. Plan 9 support
