@@ -99,6 +99,29 @@ Below are practical examples to demonstrate how to use eget2:
     ```
     This saves the downloaded files to a specified directory.
 
+Supported archival formats
+==========================
+- Supports: Github, Gitlab, Codeberg, GHCR, etc
+- Filtering based on Regex, and simple matching too
+- Concurrency (W.I.P)
+- Etc, refer to README to read about each feature in detail
+- Supported compression formats
+  - brotli (.br)
+  - bzip2 (.bz2)
+  - flate (.zip)
+  - gzip (.gz)
+  - lz4 (.lz4)
+  - lzip (.lz)
+  - minlz (.mz)
+  - snappy (.sz) and S2 (.s2)
+  - xz (.xz)
+  - zlib (.zz)
+  - zstandard (.zst)
+- Supported archive formats:
+  - .zip
+  - .tar (including any compressed variants like .tar.gz)
+  - .rar
+  - .7z
 
 License
 -------
@@ -115,3 +138,12 @@ Contributions are welcome! To contribute to eget2:
 -   Make your changes.
 
 -   Submit a pull request.
+
+
+### TODOs
+1. Simplify codebase, reduce LOC
+2. Build for Android
+3. Build for Plan 9
+   - Subtasks
+     1. Decouple the progressbar library from the "eget2/pkg" code
+     2. Add a fetch.go and fetch_noprogressbar.go file, which specifically builds with/without the progressbar library via a go tag as well as based on GOOS
