@@ -99,8 +99,8 @@ Below are practical examples to demonstrate how to use eget2:
     ```
     This saves the downloaded files to a specified directory.
 
-Supported archival formats
-==========================
+Features
+========
 - Supports: Github, Gitlab, Codeberg, GHCR, etc
 - Filtering based on Regex, and simple matching too
 - Concurrency (W.I.P)
