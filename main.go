@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"eget2/pkg"
+	"github.com/xplshn/eget2/pkg"
 	_ "github.com/breml/rootcerts" // built-in ca certs
 
 	"github.com/hedzr/progressbar"

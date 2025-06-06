@@ -1,4 +1,4 @@
-module eget2
+module github.com/xplshn/eget2
 
 go 1.25
 
