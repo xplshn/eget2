@@ -1,7 +1,7 @@
 eget2
 =====
 
-**eget2** is a feature-complete command-line tool for downloading files from GitHub, GitLab, GHCR (GitHub Container Registry), or direct URLs. It is designed as a replacement for zyedidia/eget, but it was written from scratch, to fix its shortcomings
+**eget2** is a feature-complete command-line tool for downloading files from GitHub, GitLab, Codeberg, GHCR (GitHub Container Registry), or direct URLs. It is designed as a replacement for zyedidia/eget, but it was written from scratch, to fix its shortcomings
 
 Installation
 ------------
